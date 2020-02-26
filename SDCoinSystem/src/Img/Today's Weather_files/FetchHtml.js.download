@@ -1,0 +1,130 @@
+function parseResponse(FetchXml) {
+	var i,j;
+	var ForecastTag = FetchXml.getElementsByTagName("forecast");
+	var TimeTag = ForecastTag[0].getElementsByTagName("time").length;
+	var dd = [];
+	var outputArray = []; 
+        var count = 0; 
+        var start = false; 
+	var DayTag,DayTag2,
+		TemperatureTag,
+		WindTag,
+		CloudTag,
+		HumidityTag;
+	var WholeData = [],avgwholeData = [];
+
+	for (i = 0; i < TimeTag; i++) {
+
+		DayTag = ForecastTag[0].getElementsByTagName("time")[i].getAttribute('from');
+
+
+		TemperatureTag = parseInt(parseFloat(ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("temperature")[0]
+			.getAttribute('value')) - 273);
+
+
+		WindTag = ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("windSpeed")[0].getAttribute('name') +
+			',' + ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("windDirection")[0].getAttribute('name');
+
+		CloudTag = ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("clouds")[0].getAttribute('value');
+
+		HumidityTag = ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("humidity")[0].getAttribute('value') +
+			ForecastTag[0].getElementsByTagName("time")[i].getElementsByTagName("humidity")[0].getAttribute('unit');
+
+		//console.log(DayTag.substring(0, 10) + " TTTT" + TemperatureTag + WindTag + CloudTag + HumidityTag);
+
+	
+
+		WholeData.push({
+			Date: DayTag.substring(0, 10),
+			Temperature: TemperatureTag,
+			Wind: WindTag,
+			Cloud: CloudTag,
+			HumidityTag: HumidityTag
+		})
+console.log(WholeData);	
+	}
+for (j = 0; j < WholeData.length; j++) { 
+            for (k = 0; k < outputArray.length; k++) { 
+                if ( WholeData[j].Date == outputArray[k].Date ) { 
+                    start = true; 
+                } 
+            } 
+            count++; 
+            if (count == 1 && start == false) { 
+                outputArray.push(WholeData[j]); 
+            } 
+            start = false; 
+            count = 0; 
+        } 
+        //console.log(outputArray);
+		var tempp = [];
+		var wind = [];
+		var index =[0,0,0,0,0]; 
+		for(var i=0;i<outputArray.length;i++)
+        { var temp22=0;
+        	var Humidity=0;
+        	var Cloud;
+        	var counter=0;
+        	var indexxx=0;
+        	for(var k = 0; k < WholeData.length; k++)
+        	{
+        		if( WholeData[k].Date == outputArray[i].Date )
+        		{
+        			temp22 += WholeData[k].Temperature;
+        			//Humidity += WholeData[k].HumidityTag;
+        			counter++;
+        			//wind[i] = WholeData[i].Wind;
+        			
+        		}
+    				
+        	}
+        	
+        	temp22 = temp22/counter;
+        	//Humidity = Humidity/counter;
+        	avgwholeData.push({
+			Date: outputArray[i].Date,
+			Temperature:temp22,
+			//Humidity:Humidity,
+
+			})
+        	 
+        }
+        //console.log(avgwholeData);
+	}
+
+
+
+
+
+function ResponseCheck() {
+	var cityName = document.getElementById("CityName").value;
+	var request;
+	if (window.XMLHttpRequest) {
+		request = new XMLHttpRequest();
+	} else {
+		request = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	if (request) {
+		request.onreadystatechange = function () {
+			if (this.readyState == 4 && this.status == 200) {
+				console.log(request.responseXML);
+				parseResponse(this.responseXML);
+			}
+		};
+	}
+
+
+	request.open("GET", "http://api.openweathermap.org/data/2.5/forecast?q=" + cityName +
+		"&APPID=e23ccbd3f8b2a7a6a46372e6934d17af&mode=xml", true);
+	request.send();
+
+}
+window.onload = function () {
+
+	var buttonClick = document.getElementById("WeatherClick");
+
+	buttonClick.onclick = function () {
+		console.log("varun");
+		ResponseCheck();
+	}
+}
